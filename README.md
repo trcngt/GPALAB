@@ -25,7 +25,6 @@
 * **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 * **Data Visualization:** [Chart.js](https://www.chartjs.org/)
 * **Backend & Auth:** [Firebase Authentication & Firestore](https://firebase.google.com/)
-* **Export PDF:** [html2pdf.js](https://artskydj.github.io/html2pdf.js/)
 
 ---
 
