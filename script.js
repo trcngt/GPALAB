@@ -649,20 +649,38 @@ function saveData() {
   }
 }
 
-function loadData() {
-  initTheme();
-  document.getElementById("semesterContainer").innerHTML = "";
+function loadData(externalData = null) {
+  const raw = externalData ? JSON.stringify(externalData) : localStorage.getItem("GPALAB_DATA");
+  const container = document.getElementById("semesterContainer");
+  if (!container) return;
+  container.innerHTML = ""; // Xóa sạch giao diện cũ trước khi render
 
-  if (currentUser) {
-    db.collection("users").doc(currentUser.uid).get().then(doc => {
-      if (doc.exists) renderLoadedData(doc.data());
-      else { addSemesterBlock(); addSemesterBlock(); }
-    }).catch(err => console.error(err));
+  if (raw) {
+    try {
+      const state = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (state.targetCPA) document.getElementById("targetCPA").value = state.targetCPA;
+      if (state.totalProgramCredits) document.getElementById("totalProgramCredits").value = state.totalProgramCredits;
+      if (state.scaleKey) currentScaleKey = state.scaleKey;
+
+      if (state.semesters && state.semesters.length > 0) {
+        // Tự động lọc bỏ các học kỳ bị trùng lặp (giới hạn tối đa theo hệ đào tạo)
+        const maxSemesters = 9; 
+        const cleanSemesters = state.semesters.slice(0, maxSemesters);
+        
+        cleanSemesters.forEach(sem => addSemesterBlock(sem));
+      } else {
+        addSemesterBlock();
+      }
+    } catch (e) {
+      console.error("Lỗi parse LocalStorage:", e);
+      addSemesterBlock();
+    }
   } else {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) { addSemesterBlock(); addSemesterBlock(); return; }
-    try { renderLoadedData(JSON.parse(saved)); } catch (e) { console.error(e); }
+    addSemesterBlock();
   }
+
+  calculate();
+  saveData(); // Ghi đè lại bản sạch (157 TC / 9 kỳ) lên Cloud và LocalStorage
 }
 
 function renderLoadedData(appData) {
