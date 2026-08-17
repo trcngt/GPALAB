@@ -123,14 +123,29 @@ auth.onAuthStateChanged(user => {
   const userInfo = document.getElementById("userInfo");
 
   if (user) {
-    loginBtn.classList.add("hidden");
-    userInfo.classList.remove("hidden");
-    document.getElementById("userAvatar").src = user.photoURL;
-    document.getElementById("userName").innerText = user.displayName;
-    loadData();
+    if (loginBtn) loginBtn.classList.add("hidden");
+    if (userInfo) userInfo.classList.remove("hidden");
+    const avatar = document.getElementById("userAvatar");
+    const name = document.getElementById("userName");
+    if (avatar) avatar.src = user.photoURL || "fox.png";
+    if (name) name.innerText = user.displayName || user.email;
+
+    // Tự động tải dữ liệu từ Cloud về
+    if (db) {
+      db.collection("users").doc(user.uid).get().then(doc => {
+        if (doc.exists) {
+          loadData(doc.data());
+        } else {
+          loadData();
+        }
+      }).catch(err => {
+        console.error("Lỗi tải Cloud:", err);
+        loadData();
+      });
+    }
   } else {
-    loginBtn.classList.remove("hidden");
-    userInfo.classList.add("hidden");
+    if (loginBtn) loginBtn.classList.remove("hidden");
+    if (userInfo) userInfo.classList.add("hidden");
     loadData();
   }
 });
@@ -515,7 +530,6 @@ function updateGradeDistributionChart(gradeCounts) {
 }
 
 // ----- TÍNH ĐIỂM MỤC TIÊU -----
-// ----- TÍNH ĐIỂM MỤC TIÊU (XỬ LÝ TRIỆT ĐỂ DẤU PHẨY / DẤU CHẤM) -----
 function calculateGoal() {
   const targetCPAEl = document.getElementById("targetCPA");
   const totalProgramCreditsEl = document.getElementById("totalProgramCredits");
@@ -617,23 +631,24 @@ function getRank(gpa4, credits) {
 }
 
 function saveData() {
-  const programYears = document.getElementById("programYears").value;
-  const gradeScale = document.getElementById("gradeScale").value;
-  const targetCPA = document.getElementById("targetCPA").value;
-  const totalProgramCredits = document.getElementById("totalProgramCredits").value;
+  if (isLoadingData) return;
+  const programYears = document.getElementById("programYears")?.value || "4.5";
+  const gradeScale = document.getElementById("gradeScale")?.value || "standard_a";
+  const targetCPA = document.getElementById("targetCPA")?.value || "3.20";
+  const totalProgramCredits = document.getElementById("totalProgramCredits")?.value || "157";
 
   const semestersData = [];
   document.querySelectorAll(".semester-card").forEach(semBlock => {
-    const title = semBlock.querySelector(".sem-title-select").value;
+    const title = semBlock.querySelector(".sem-title-select")?.value || "Học kỳ";
     const courses = [];
 
     semBlock.querySelectorAll(".course-tbody tr").forEach(row => {
       courses.push({
-        name: row.querySelector(".subject-name").value,
-        credit: row.querySelector(".credit-input").value,
-        grade: row.querySelector(".grade-select").value,
-        improveGrade: row.querySelector(".improve-grade-select").value,
-        excludeGPA: row.querySelector(".exclude-checkbox").checked
+        name: row.querySelector(".subject-name")?.value || "",
+        credit: parseFloat(row.querySelector(".credit-input")?.value) || 0,
+        grade: row.querySelector(".grade-select")?.value || "",
+        improveGrade: row.querySelector(".improve-grade-select")?.value || "",
+        excludeGPA: row.querySelector(".exclude-checkbox")?.checked || false
       });
     });
 
@@ -642,10 +657,12 @@ function saveData() {
 
   const appData = { programYears, gradeScale, targetCPA, totalProgramCredits, customGradeMapValues, semestersData };
 
-  if (currentUser) {
-    db.collection("users").doc(currentUser.uid).set(appData).catch(err => console.error(err));
-  } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  // Luôn lưu bản offline vào LocalStorage
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+
+  // Đồng bộ lên Cloud nếu đang đăng nhập
+  if (currentUser && db) {
+    db.collection("users").doc(currentUser.uid).set(appData, { merge: true }).catch(err => console.error("Lỗi đồng bộ Cloud:", err));
   }
 }
 
