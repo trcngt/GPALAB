@@ -531,27 +531,27 @@ function calculateGoal() {
 
   if (!goalResult) return;
 
-  // 1. Trường hợp chưa nhập dữ liệu môn học nào
+  // 1. Chưa có môn học nào
   if (currentCredits === 0) {
     goalResult.innerText = `Cần đạt trung bình ${targetCPA.toFixed(2)} GPA / kỳ (${totalProgramCredits} TC toàn khóa)`;
     goalResult.className = "text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300";
     return;
   }
 
-  // 2. Trường hợp ĐÃ HỌC ĐỦ hoặc VƯỢT số tín chỉ toàn khóa (remainingCredits <= 0)
+  // 2. ĐÃ HỌC ĐỦ HOẶC VƯỢT TÍN CHỈ (remainingCredits <= 0)
   if (remainingCredits <= 0) {
     if (currentCPA4 >= targetCPA) {
       goalResult.innerHTML = `🎉 <strong>Chúc mừng!</strong> Bạn đã hoàn thành khóa học (${currentCredits}/${totalProgramCredits} TC) và <strong>ĐẠT mục tiêu</strong> (CPA: <span class="text-emerald-600 font-bold">${currentCPA4.toFixed(2)}</span> / ${targetCPA.toFixed(2)}).`;
       goalResult.className = "text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 leading-relaxed";
     } else {
       const diff = (targetCPA - currentCPA4).toFixed(2);
-      goalResult.innerHTML = `⚠️ <strong>CHƯA ĐẠT MỤC TIÊU:</strong> Đã tích lũy đủ ${currentCredits} TC nhưng CPA hiện tại là <strong>${currentCPA4.toFixed(2)}</strong> / ${targetCPA.toFixed(2)} (còn thiếu <strong>${diff}</strong> điểm). Bạn cần học cải thiện các môn điểm thấp để nâng CPA!`;
+      goalResult.innerHTML = `⚠️ <strong>CHƯA ĐẠT MỤC TIÊU:</strong> Đã học đủ ${currentCredits} TC nhưng CPA đạt <strong>${currentCPA4.toFixed(2)}</strong> / ${targetCPA.toFixed(2)} (thiếu <strong>${diff}</strong> điểm). Hãy học cải thiện các môn điểm thấp để kéo CPA!`;
       goalResult.className = "text-xs text-amber-600 dark:text-amber-400 leading-relaxed";
     }
     return;
   }
 
-  // 3. Trường hợp VẪN CÒN tín chỉ phải học (remainingCredits > 0)
+  // 3. VẪN CÒN TÍN CHỈ CHƯA HỌC
   const currentPoints = currentCPA4 * currentCredits;
   const targetTotalPoints = targetCPA * totalProgramCredits;
   const neededPoints = targetTotalPoints - currentPoints;
@@ -561,7 +561,7 @@ function calculateGoal() {
     goalResult.innerHTML = `❌ Cần <strong>${neededGPA.toFixed(2)} GPA</strong> cho ${remainingCredits} TC còn lại.<br><span class="text-[11px] font-normal opacity-90">(Mục tiêu không khả thi nếu chỉ học môn mới. Cần học cải thiện thêm các môn cũ).</span>`;
     goalResult.className = "text-xs font-semibold text-red-500 leading-relaxed";
   } else if (neededGPA <= 0) {
-    goalResult.innerHTML = `🎉 CPA hiện tại (<strong>${currentCPA4.toFixed(2)}</strong>) đã chắc chắn vượt mục tiêu ${targetCPA.toFixed(2)} ngay cả khi các môn còn lại đạt điểm tối thiểu!`;
+    goalResult.innerHTML = `🎉 CPA hiện tại (<strong>${currentCPA4.toFixed(2)}</strong>) đã chắc chắn vượt mục tiêu ${targetCPA.toFixed(2)}!`;
     goalResult.className = "text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 leading-relaxed";
   } else {
     goalResult.innerHTML = `Cần đạt trung bình: <strong class="text-indigo-600 dark:text-indigo-400 text-sm sm:text-base">${neededGPA.toFixed(2)} GPA</strong> / kỳ (${remainingCredits} TC còn lại)`;
