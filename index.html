@@ -217,30 +217,29 @@
         </div>
       </div>
 
-      <!-- Nút Hành Động -->
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700" data-html2canvas-ignore="true">
-        <div class="flex flex-wrap gap-3 w-full sm:w-auto items-center">
-          <button onclick="addSemesterBlock()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg transition text-xs flex items-center gap-1 w-full sm:w-auto justify-center">
-            <span>+</span> Thêm Học Kỳ
-          </button>
+<!-- CỤM NÚT HÀNH ĐỘNG -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6" data-html2canvas-ignore="true">
+        <button onclick="addSemesterBlock()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition text-xs flex items-center gap-1.5 cursor-pointer">
+          <span class="text-sm font-bold">+</span> Thêm Học Kỳ
+        </button>
 
-        <button onclick="clearData()" class="text-xs text-red-500 hover:text-red-700 underline">
+        <button onclick="clearData()" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline transition">
           Xóa toàn bộ dữ liệu
         </button>
       </div>
 
-      <!-- FOOTER -->
-      <footer class="pt-6 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400 space-y-3 w-full" data-html2canvas-ignore="true">
-        <p>© 2026 Designed &amp; Developed by <span class="font-semibold text-indigo-600 dark:text-indigo-400">trcngt_</span></p>
+      <!-- FOOTER THÔNG TIN BẢN QUYỀN (TÁCH XUỐNG DƯỚI CÙNG) -->
+      <footer class="pt-8 pb-4 text-center text-xs text-slate-400 dark:text-slate-500 space-y-2.5 w-full mt-6 border-t border-slate-200/60 dark:border-slate-800" data-html2canvas-ignore="true">
+        <p>© 2026 Designed & Developed by <span class="font-bold text-indigo-600 dark:text-indigo-400">trcngt_</span></p>
         
-        <div class="flex justify-center items-center gap-5 pt-1">
+        <div class="flex justify-center items-center gap-6 pt-0.5">
           <a href="mailto:nguyetna214@gmail.com" target="_blank" class="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition" title="Gửi Mail">
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
             <span>nguyetna214@gmail.com</span>
           </a>
 
           <a href="https://www.instagram.com/trcngt_" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 hover:text-pink-500 transition" title="Instagram Profile">
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
             <span>@trcngt_</span>
           </a>
         </div>
