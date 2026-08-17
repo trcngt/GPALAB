@@ -515,50 +515,57 @@ function updateGradeDistributionChart(gradeCounts) {
 }
 
 // ----- TÍNH ĐIỂM MỤC TIÊU -----
+// ----- TÍNH ĐIỂM MỤC TIÊU -----
 function calculateGoal() {
-  const targetCPA = parseFloat(document.getElementById("targetCPA").value) || 3.2;
-  const totalProgramCredits = parseFloat(document.getElementById("totalProgramCredits").value) || 130;
-  
+  const targetCPAInput = document.getElementById("targetCPA").value.toString().replace(',', '.');
+  const targetCPA = parseFloat(targetCPAInput) || 3.2;
+
+  const totalProgramCreditsInput = document.getElementById("totalProgramCredits").value.toString().replace(',', '.');
+  const totalProgramCredits = parseFloat(totalProgramCreditsInput) || 130;
+
   const currentCredits = parseFloat(document.getElementById("totalCreditsAll").innerText) || 0;
   const currentCPA4 = parseFloat(document.getElementById("totalCPA4").innerText) || 0;
 
   const remainingCredits = totalProgramCredits - currentCredits;
   const goalResult = document.getElementById("neededGPA");
 
-  // Trường hợp đã học đủ hoặc vượt tổng số tín chỉ toàn khóa
-  if (remainingCredits <= 0) {
-    if (currentCredits === 0) {
-      goalResult.innerText = "Chưa có dữ liệu tín chỉ";
-      goalResult.className = "text-sm font-bold text-slate-500";
-      return;
-    }
+  if (!goalResult) return;
 
+  // 1. Trường hợp chưa nhập dữ liệu môn học nào
+  if (currentCredits === 0) {
+    goalResult.innerText = `Cần đạt trung bình ${targetCPA.toFixed(2)} GPA / kỳ (${totalProgramCredits} TC toàn khóa)`;
+    goalResult.className = "text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300";
+    return;
+  }
+
+  // 2. Trường hợp ĐÃ HỌC ĐỦ hoặc VƯỢT số tín chỉ toàn khóa (remainingCredits <= 0)
+  if (remainingCredits <= 0) {
     if (currentCPA4 >= targetCPA) {
-      goalResult.innerText = `🎉 Đã đủ tín chỉ & ĐẠT mục tiêu! (CPA: ${currentCPA4.toFixed(2)} / ${targetCPA.toFixed(2)})`;
-      goalResult.className = "text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 leading-snug";
+      goalResult.innerHTML = `🎉 <strong>Chúc mừng!</strong> Bạn đã hoàn thành khóa học (${currentCredits}/${totalProgramCredits} TC) và <strong>ĐẠT mục tiêu</strong> (CPA: <span class="text-emerald-600 font-bold">${currentCPA4.toFixed(2)}</span> / ${targetCPA.toFixed(2)}).`;
+      goalResult.className = "text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 leading-relaxed";
     } else {
-      const missing = (targetCPA - currentCPA4).toFixed(2);
-      goalResult.innerText = `⚠️ Đã học đủ ${currentCredits} TC nhưng CHƯA đạt mục tiêu (CPA: ${currentCPA4.toFixed(2)} / ${targetCPA.toFixed(2)} - Thiếu ${missing} điểm). Hãy học cải thiện lại các môn điểm thấp để kéo CPA!`;
-      goalResult.className = "text-xs font-bold text-amber-600 dark:text-amber-400 leading-relaxed";
+      const diff = (targetCPA - currentCPA4).toFixed(2);
+      goalResult.innerHTML = `⚠️ <strong>CHƯA ĐẠT MỤC TIÊU:</strong> Đã tích lũy đủ ${currentCredits} TC nhưng CPA hiện tại là <strong>${currentCPA4.toFixed(2)}</strong> / ${targetCPA.toFixed(2)} (còn thiếu <strong>${diff}</strong> điểm). Bạn cần học cải thiện các môn điểm thấp để nâng CPA!`;
+      goalResult.className = "text-xs text-amber-600 dark:text-amber-400 leading-relaxed";
     }
     return;
   }
 
-  // Trường hợp vẫn còn tín chỉ chưa học
+  // 3. Trường hợp VẪN CÒN tín chỉ phải học (remainingCredits > 0)
   const currentPoints = currentCPA4 * currentCredits;
   const targetTotalPoints = targetCPA * totalProgramCredits;
   const neededPoints = targetTotalPoints - currentPoints;
   const neededGPA = neededPoints / remainingCredits;
 
   if (neededGPA > 4.0) {
-    goalResult.innerText = `${neededGPA.toFixed(2)} GPA / kỳ (Mục tiêu không khả thi trên thang 4)`;
-    goalResult.className = "text-xs sm:text-sm font-bold text-red-500";
+    goalResult.innerHTML = `❌ Cần <strong>${neededGPA.toFixed(2)} GPA</strong> cho ${remainingCredits} TC còn lại.<br><span class="text-[11px] font-normal opacity-90">(Mục tiêu không khả thi nếu chỉ học môn mới. Cần học cải thiện thêm các môn cũ).</span>`;
+    goalResult.className = "text-xs font-semibold text-red-500 leading-relaxed";
   } else if (neededGPA <= 0) {
-    goalResult.innerText = `🎉 Bạn đã chắc chắn đạt mục tiêu đề ra! (CPA hiện tại: ${currentCPA4.toFixed(2)})`;
-    goalResult.className = "text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400";
+    goalResult.innerHTML = `🎉 CPA hiện tại (<strong>${currentCPA4.toFixed(2)}</strong>) đã chắc chắn vượt mục tiêu ${targetCPA.toFixed(2)} ngay cả khi các môn còn lại đạt điểm tối thiểu!`;
+    goalResult.className = "text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 leading-relaxed";
   } else {
-    goalResult.innerText = `${neededGPA.toFixed(2)} GPA / kỳ (${remainingCredits} TC còn lại)`;
-    goalResult.className = "text-base font-bold text-indigo-600 dark:text-indigo-400";
+    goalResult.innerHTML = `Cần đạt trung bình: <strong class="text-indigo-600 dark:text-indigo-400 text-sm sm:text-base">${neededGPA.toFixed(2)} GPA</strong> / kỳ (${remainingCredits} TC còn lại)`;
+    goalResult.className = "text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed";
   }
 }
 
