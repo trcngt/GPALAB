@@ -730,52 +730,196 @@ function clearData() {
   }
 }
 
+// ----- XUẤT BẢNG ĐIỂM PDF CHUẨN ĐẸP, KHÔNG LỖI FONT -----
 function exportToPDF() {
-  const element = document.getElementById("exportArea");
-  if (!element) {
-    alert("Không tìm thấy vùng dữ liệu để xuất PDF!");
-    return;
-  }
+  const currentCredits = document.getElementById("totalCreditsAll")?.innerText || "0";
+  const cpa4 = document.getElementById("totalCPA4")?.innerText || "0.00";
+  const cpa10 = document.getElementById("totalCPA10")?.innerText || "0.00";
+  const cpaRank = document.getElementById("cpaRank")?.innerText || "Chưa xác định";
+  
+  // Tên người dùng nếu có đăng nhập
+  const userNameEl = document.querySelector("#userProfileNav span") || document.querySelector("header span");
+  const userName = userNameEl ? userNameEl.innerText.replace("Đã đồng bộ Cloud", "").trim() : "Sinh viên GPALAB";
 
-  // Đóng Tracy widget nếu đang mở để tránh vướng vào bản in
-  const tracyBox = document.getElementById("tracyChatBox");
-  if (tracyBox && !tracyBox.classList.contains("hidden")) {
-    tracyBox.classList.add("hidden");
-  }
+  // Lấy dữ liệu mục tiêu & chẩn đoán cải thiện
+  const targetCPA = document.getElementById("targetCPA")?.value || "3.20";
+  const goalText = document.getElementById("neededGPA")?.innerText || "";
+  const suggestItems = Array.from(document.querySelectorAll("#retakeSuggestions li")).map(li => `<li>${li.innerText}</li>`).join("");
 
-  const opt = {
-    margin: [10, 10, 15, 10], // top, left, bottom, right (mm)
-    filename: `Bang_Diem_GPALAB_${new Date().toISOString().slice(0, 10)}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      scrollY: 0,
-      windowWidth: document.documentElement.offsetWidth
-    },
-    jsPDF: {
-      unit: 'mm',
-      format: 'a4',
-      orientation: 'portrait'
-    },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-  };
+  // Thu thập dữ liệu tóm tắt các học kỳ
+  let semestersSummaryHtml = "";
+  const semBlocks = document.querySelectorAll("#semesterContainer > div");
 
-  // Tiến hành tạo và tải file PDF
-  html2pdf()
-    .set(opt)
-    .from(element)
-    .toPdf()
-    .get('pdf')
-    .then(function (pdf) {
-      // Đảm bảo dữ liệu canvas vẽ hoàn tất trước khi lưu
-    })
-    .save()
-    .catch(function (error) {
-      console.error("Lỗi xuất PDF:", error);
-      alert("Đã xảy ra lỗi khi tạo PDF. Vui lòng thử lại!");
-    });
+  semBlocks.forEach((sem, idx) => {
+    const semName = sem.querySelector("select")?.selectedOptions[0]?.text || `Học kỳ ${idx + 1}`;
+    const tcMatch = sem.innerText.match(/Tín chỉ:\s*(\d+)/);
+    const gpa4Match = sem.innerText.match(/GPA Kỳ \(Hệ 4\):\s*([\d\.]+)/);
+    const gpa10Match = sem.innerText.match(/GPA Kỳ \(Hệ 10\):\s*([\d\.]+)/);
+    const rankMatch = sem.innerText.match(/Xếp loại:\s*([^\n\r]+)/);
+
+    const tc = tcMatch ? tcMatch[1] : "-";
+    const gpa4 = gpa4Match ? gpa4Match[1] : "-";
+    const gpa10 = gpa10Match ? gpa10Match[1] : "-";
+    const rank = rankMatch ? rankMatch[1].replace("Xóa Kỳ", "").trim() : "-";
+
+    semestersSummaryHtml += `
+      <tr>
+        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-weight: 500;">${semName}</td>
+        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600;">${tc}</td>
+        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #4338ca;">${gpa4}</td>
+        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">${gpa10}</td>
+        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">${rank}</td>
+      </tr>
+    `;
+  });
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <title>Bang_Diem_GPALAB_${new Date().toISOString().slice(0, 10)}</title>
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 12mm 15mm;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: #1e293b;
+          margin: 0;
+          padding: 0;
+          font-size: 10pt;
+          line-height: 1.4;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .header {
+          background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+          color: #ffffff;
+          padding: 16px 20px;
+          border-radius: 8px;
+          margin-bottom: 14px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .title { font-size: 15pt; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0; }
+        .subtitle { font-size: 8.5pt; opacity: 0.9; margin: 0; }
+        .user-info { text-align: right; font-size: 9pt; }
+        
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 8px;
+          margin-bottom: 14px;
+        }
+        .stat-card {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          padding: 8px;
+          border-radius: 6px;
+          text-align: center;
+        }
+        .stat-label { font-size: 7.5pt; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 2px; }
+        .stat-val { font-size: 13pt; font-weight: 800; color: #1e1b4b; }
+        
+        .section-title {
+          font-size: 10.5pt;
+          font-weight: 700;
+          color: #1e293b;
+          border-left: 4px solid #4f46e5;
+          padding-left: 8px;
+          margin: 12px 0 8px 0;
+          text-transform: uppercase;
+        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9pt; }
+        th { background: #f1f5f9; color: #334155; padding: 7px 10px; border: 1px solid #cbd5e1; text-align: left; font-weight: 700; }
+        
+        .callout {
+          background-color: #fffbeb;
+          border: 1px solid #fef3c7;
+          border-left: 4px solid #f59e0b;
+          border-radius: 6px;
+          padding: 10px 14px;
+          font-size: 9pt;
+          color: #92400e;
+        }
+        .footer {
+          margin-top: 15px;
+          text-align: center;
+          font-size: 8pt;
+          color: #94a3b8;
+          border-top: 1px solid #e2e8f0;
+          padding-top: 8px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <div class="title">BẢNG TỔNG HỢP KẾT QUẢ HỌC TẬP</div>
+          <div class="subtitle">Hệ thống tính toán & quản lý GPALAB</div>
+        </div>
+        <div class="user-info">
+          <div>Sinh viên: <strong>${userName}</strong></div>
+          <div style="margin-top: 3px; font-size: 8pt; opacity: 0.85;">Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Tổng Tín Chỉ</div><div class="stat-val">${currentCredits}</div></div>
+        <div class="stat-card"><div class="stat-label">Số Học Kỳ</div><div class="stat-val">${semBlocks.length}</div></div>
+        <div class="stat-card"><div class="stat-label">CPA Hệ 4</div><div class="stat-val" style="color: #4338ca;">${cpa4}</div></div>
+        <div class="stat-card"><div class="stat-label">CPA Hệ 10</div><div class="stat-val">${cpa10}</div></div>
+        <div class="stat-card"><div class="stat-label">Xếp Loại</div><div class="stat-val" style="color: #059669;">${cpaRank}</div></div>
+      </div>
+
+      <div class="section-title">1. TỔNG QUAN KẾT QUẢ THEO TỪNG HỌC KỲ</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Học kỳ</th>
+            <th style="text-align: center; width: 15%;">Số tín chỉ</th>
+            <th style="text-align: center; width: 20%;">GPA Kỳ (Hệ 4)</th>
+            <th style="text-align: center; width: 20%;">GPA Kỳ (Hệ 10)</th>
+            <th style="text-align: center; width: 20%;">Xếp loại</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${semestersSummaryHtml}
+          <tr style="background-color: #eef2ff; font-weight: bold;">
+            <td style="padding: 7px 10px; border: 1px solid #cbd5e1;">TỔNG TOÀN KHÓA</td>
+            <td style="padding: 7px 10px; border: 1px solid #cbd5e1; text-align: center;">${currentCredits} TC</td>
+            <td style="padding: 7px 10px; border: 1px solid #cbd5e1; text-align: center; color: #4338ca;">CPA ${cpa4}</td>
+            <td style="padding: 7px 10px; border: 1px solid #cbd5e1; text-align: center;">CPA ${cpa10}</td>
+            <td style="padding: 7px 10px; border: 1px solid #cbd5e1; text-align: center; color: #059669;">${cpaRank.toUpperCase()}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="section-title">2. KẾ HOẠCH MỤC TIÊU & ĐỀ XUẤT CẢI THIỆN</div>
+      <div class="callout">
+        <div style="font-weight: bold; margin-bottom: 4px;">🎯 Mục tiêu CPA (${targetCPA} / 4.0):</div>
+        <div>${goalText}</div>
+        ${suggestItems ? `<div style="margin-top: 6px; font-weight: bold;">💡 Các môn nên học cải thiện để nâng CPA nhanh nhất:</div><ul style="margin: 4px 0 0 18px; padding: 0;">${suggestItems}</ul>` : ''}
+      </div>
+
+      <div class="footer">
+        GPALAB Academic Suite • Bản in tự động từ hệ thống trcngt.github.io/GPALAB
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
 }
 
 // ===== TRACY AI MENTOR LOGIC =====
