@@ -201,15 +201,15 @@
             🎯 Kế Hoạch Đạt Mục Tiêu CPA
           </h2>
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Mục tiêu CPA Hệ 4</label>
-              <input type="number" id="targetCPA" value="3.20" step="0.05" min="2.0" max="4.0" class="w-full border dark:border-slate-700 dark:bg-slate-900 rounded p-1.5 text-xs font-bold text-indigo-600" oninput="calculateGoal()">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Tổng TC toàn khóa</label>
-              <input type="number" id="totalProgramCredits" value="130" step="1" min="50" max="250" class="w-full border dark:border-slate-700 dark:bg-slate-900 rounded p-1.5 text-xs font-bold" oninput="calculateGoal()">
-            </div>
-          </div>
+  <div>
+    <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Mục tiêu CPA Hệ 4</label>
+    <input type="text" inputmode="decimal" id="targetCPA" value="3.20" class="w-full border dark:border-slate-700 dark:bg-slate-900 rounded p-1.5 text-xs font-bold text-indigo-600" oninput="calculateGoal(); saveData();">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Tổng TC toàn khóa</label>
+    <input type="number" id="totalProgramCredits" value="130" step="1" min="50" max="250" class="w-full border dark:border-slate-700 dark:bg-slate-900 rounded p-1.5 text-xs font-bold" oninput="calculateGoal(); saveData();">
+  </div>
+</div>
           <div id="goalResult" class="p-3 bg-indigo-50 dark:bg-slate-900/50 rounded-lg text-xs space-y-1">
             <p class="text-slate-600 dark:text-slate-300">Cần đạt trung bình các kỳ còn lại:</p>
             <p id="neededGPA" class="text-base font-bold text-indigo-600 dark:text-indigo-400">0.00 GPA</p>
