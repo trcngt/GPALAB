@@ -525,26 +525,40 @@ function calculateGoal() {
   const remainingCredits = totalProgramCredits - currentCredits;
   const goalResult = document.getElementById("neededGPA");
 
+  // Trường hợp đã học đủ hoặc vượt tổng số tín chỉ toàn khóa
   if (remainingCredits <= 0) {
-    goalResult.innerText = "Bạn đã hoàn thành đủ tín chỉ!";
-    goalResult.className = "text-sm font-bold text-emerald-600";
+    if (currentCredits === 0) {
+      goalResult.innerText = "Chưa có dữ liệu tín chỉ";
+      goalResult.className = "text-sm font-bold text-slate-500";
+      return;
+    }
+
+    if (currentCPA4 >= targetCPA) {
+      goalResult.innerText = `🎉 Đã đủ tín chỉ & ĐẠT mục tiêu! (CPA: ${currentCPA4.toFixed(2)} / ${targetCPA.toFixed(2)})`;
+      goalResult.className = "text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 leading-snug";
+    } else {
+      const missing = (targetCPA - currentCPA4).toFixed(2);
+      goalResult.innerText = `⚠️ Đã học đủ ${currentCredits} TC nhưng CHƯA đạt mục tiêu (CPA: ${currentCPA4.toFixed(2)} / ${targetCPA.toFixed(2)} - Thiếu ${missing} điểm). Hãy học cải thiện lại các môn điểm thấp để kéo CPA!`;
+      goalResult.className = "text-xs font-bold text-amber-600 dark:text-amber-400 leading-relaxed";
+    }
     return;
   }
 
+  // Trường hợp vẫn còn tín chỉ chưa học
   const currentPoints = currentCPA4 * currentCredits;
   const targetTotalPoints = targetCPA * totalProgramCredits;
   const neededPoints = targetTotalPoints - currentPoints;
   const neededGPA = neededPoints / remainingCredits;
 
   if (neededGPA > 4.0) {
-    goalResult.innerText = `${neededGPA.toFixed(2)} GPA (Mục tiêu không khả thi)`;
-    goalResult.className = "text-sm font-bold text-red-500";
+    goalResult.innerText = `${neededGPA.toFixed(2)} GPA / kỳ (Mục tiêu không khả thi trên thang 4)`;
+    goalResult.className = "text-xs sm:text-sm font-bold text-red-500";
   } else if (neededGPA <= 0) {
-    goalResult.innerText = "Bạn đã đạt vượt mục tiêu đề ra!";
-    goalResult.className = "text-sm font-bold text-emerald-600";
+    goalResult.innerText = `🎉 Bạn đã chắc chắn đạt mục tiêu đề ra! (CPA hiện tại: ${currentCPA4.toFixed(2)})`;
+    goalResult.className = "text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400";
   } else {
     goalResult.innerText = `${neededGPA.toFixed(2)} GPA / kỳ (${remainingCredits} TC còn lại)`;
-    goalResult.className = "text-sm font-bold text-indigo-600 dark:text-indigo-400";
+    goalResult.className = "text-base font-bold text-indigo-600 dark:text-indigo-400";
   }
 }
 
@@ -672,14 +686,50 @@ function clearData() {
 
 function exportToPDF() {
   const element = document.getElementById("exportArea");
+  if (!element) {
+    alert("Không tìm thấy vùng dữ liệu để xuất PDF!");
+    return;
+  }
+
+  // Đóng Tracy widget nếu đang mở để tránh vướng vào bản in
+  const tracyBox = document.getElementById("tracyChatBox");
+  if (tracyBox && !tracyBox.classList.contains("hidden")) {
+    tracyBox.classList.add("hidden");
+  }
+
   const opt = {
-    margin: 0.3,
-    filename: `Bang_Diem_GPA_${new Date().toISOString().slice(0, 10)}.pdf`,
+    margin: [10, 10, 15, 10], // top, left, bottom, right (mm)
+    filename: `Bang_Diem_GPALAB_${new Date().toISOString().slice(0, 10)}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      scrollY: 0,
+      windowWidth: document.documentElement.offsetWidth
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
-  html2pdf().set(opt).from(element).save();
+
+  // Tiến hành tạo và tải file PDF
+  html2pdf()
+    .set(opt)
+    .from(element)
+    .toPdf()
+    .get('pdf')
+    .then(function (pdf) {
+      // Đảm bảo dữ liệu canvas vẽ hoàn tất trước khi lưu
+    })
+    .save()
+    .catch(function (error) {
+      console.error("Lỗi xuất PDF:", error);
+      alert("Đã xảy ra lỗi khi tạo PDF. Vui lòng thử lại!");
+    });
 }
 
 // ===== TRACY AI MENTOR LOGIC =====
