@@ -649,20 +649,72 @@ function saveData() {
   }
 }
 
-function loadData() {
-  initTheme();
-  document.getElementById("semesterContainer").innerHTML = "";
-
-  if (currentUser) {
-    db.collection("users").doc(currentUser.uid).get().then(doc => {
-      if (doc.exists) renderLoadedData(doc.data());
-      else { addSemesterBlock(); addSemesterBlock(); }
-    }).catch(err => console.error(err));
-  } else {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) { addSemesterBlock(); addSemesterBlock(); return; }
-    try { renderLoadedData(JSON.parse(saved)); } catch (e) { console.error(e); }
+function loadData(externalData = null) {
+  isLoadingData = true;
+  
+  // Quét qua tất cả các key lưu trữ cũ để lấy lại điểm đã nhập
+  let raw = externalData ? JSON.stringify(externalData) : null;
+  if (!raw) {
+    raw = localStorage.getItem("GPA_CPA_GROUPED_DATA_V9") || 
+          localStorage.getItem("GPALAB_DATA") || 
+          localStorage.getItem("GPALAB_DATA_V1");
   }
+
+  const container = document.getElementById("semesterContainer");
+  if (!container) { isLoadingData = false; return; }
+  container.innerHTML = "";
+
+  if (raw) {
+    try {
+      const appData = typeof raw === "string" ? JSON.parse(raw) : raw;
+
+      if (appData.programYears && document.getElementById("programYears")) {
+        document.getElementById("programYears").value = appData.programYears;
+      }
+      if (appData.gradeScale && document.getElementById("gradeScale")) {
+        document.getElementById("gradeScale").value = appData.gradeScale;
+        toggleCustomGradePanel();
+      }
+      if (appData.targetCPA && document.getElementById("targetCPA")) {
+        document.getElementById("targetCPA").value = appData.targetCPA;
+      }
+      if (appData.totalProgramCredits && document.getElementById("totalProgramCredits")) {
+        document.getElementById("totalProgramCredits").value = appData.totalProgramCredits;
+      }
+      if (appData.customGradeMapValues) {
+        customGradeMapValues = appData.customGradeMapValues;
+      }
+
+      // Xử lý cả 2 kiểu cấu trúc dữ liệu cũ (semesters hoặc semestersData)
+      const semList = appData.semestersData || appData.semesters || [];
+
+      if (semList.length > 0) {
+        const cleanSemesters = semList.slice(0, 9); // Giữ đúng 9 kỳ không bị nhân đôi
+        cleanSemesters.forEach(sem => {
+          const title = sem.title || sem.name || "Học kỳ";
+          const courses = sem.courses || (sem.subjects ? sem.subjects.map(s => ({
+            name: s.name,
+            credit: s.credits,
+            grade: s.grade1,
+            improveGrade: s.grade2,
+            excludeGPA: s.isExcluded
+          })) : []);
+
+          addSemesterBlock(title, courses);
+        });
+      } else {
+        addSemesterBlock();
+      }
+    } catch (e) {
+      console.error("Lỗi nạp dữ liệu cũ:", e);
+      addSemesterBlock();
+    }
+  } else {
+    addSemesterBlock();
+  }
+
+  calculate();
+  isLoadingData = false;
 }
 
 function renderLoadedData(appData) {
