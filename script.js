@@ -699,18 +699,6 @@ function clearData() {
   }
 }
 
-function exportToPDF() {
-  const element = document.getElementById("exportArea");
-  const opt = {
-    margin: 0.3,
-    filename: `Bang_Diem_GPA_${new Date().toISOString().slice(0, 10)}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(element).save();
-}
-
 // ===== TRACY AI MENTOR LOGIC =====
 function toggleTracyChat() {
   const box = document.getElementById("tracyChatBox");
